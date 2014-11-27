@@ -755,7 +755,7 @@ int rp_osc_decimate_partial(float **cha_out_signal, int *cha_in_signal,
             (t_start + ((next_out_idx*step_wr_ptr)*smpl_period))*t_unit_factor;
 
         /* A bug in FPGA? - Trig & write pointers not sample-accurate. */
-         if ( (dec_factor > 64) && (next_out_idx == 2) ) {
+        if ( (dec_factor > 64) && (next_out_idx == 2) ) {
              int i;
              for (i=0; i < next_out_idx; i++) {
                  cha_out[i] = cha_out[next_out_idx];
@@ -936,6 +936,7 @@ int rp_osc_auto_set(rp_app_params_t *orig_params,
         orig_params[TRIG_LEVEL_PARAM].value = 0;
         orig_params[AUTO_FLAG_PARAM].value  = 0;
         orig_params[TIME_UNIT_PARAM].value  = 0;
+        orig_params[TRIG_DLY_PARAM].value   = 0;
 
         min_y = (min_cha < min_chb) ? min_cha : min_chb;
         max_y = (max_cha > max_chb) ? max_cha : max_chb;
@@ -1063,6 +1064,7 @@ int rp_osc_auto_set(rp_app_params_t *orig_params,
                                         (float)(1<<(c_osc_fpga_adc_bits-1));
 
                 orig_params[MIN_GUI_PARAM].value    = 0;
+                orig_params[TRIG_DLY_PARAM].value   = 0;
 
                 if (period > 0) {
                     /* Period detected */

@@ -8,6 +8,12 @@ mkdir -p /dev/pts
 mkdir -p /dev/i2c
 mount -a
 
+# Check if SD card mounted, if not wait and try again
+if ! grep -qs '/opt' /proc/mounts; then
+	sleep 1
+	mount -a
+fi
+
 # Create /tmp structure every time, since it resides in RAM
 mkdir -p /tmp/log/nginx
 
@@ -21,27 +27,6 @@ fi
 
 # Shortcut link to u-boot EEPROM
 ln -s /sys/bus/i2c/devices/0-0050/eeprom /dev/eeprom
-
-echo "++ Bringing up lo"
-ifup lo
-
-# Allow some time for the USB WiFi device to be detected.
-sleep 1;
-
-# Bring-up wlan0 before eth0 to avoid routing problems due to 192.168.1.100
-# default IP being assigned to eth0 if no cable is plugged in or no reply
-# is received from the DHCP.
-# This way, even if wlan0 gets the IP in 192.168.1.x range (via DHCP), the
-# routing tables will be OK.
-if [ -e /opt/etc/network/wpa_supplicant.conf ]
-then
-	echo "++ Bringing up wlan0"
-	ifup wlan0
-fi
-
-echo "++ Bringing up eth0"
-ifup eth0
-
 
 # Fix keys for SHH
 chmod 600 `find /etc/ -name ssh_host_\*`
@@ -71,11 +56,11 @@ for i in `find /etc/init.d/ -name S\* | sort` ;do
     esac
 done
 
-if [ -x /opt/sbin/discovery ]
-then
-	echo "++ Starting Red Pitaya IP discovery"
-	/opt/sbin/discovery
-fi
+# Set user's connman network configuration
+/etc/init.d/connman-config
+
+# Run IP discovery service
+/opt/sbin/discovery
 
 # Start user rcS script from SD card
 OPT_RCS=/opt/etc/init.d/rcS
